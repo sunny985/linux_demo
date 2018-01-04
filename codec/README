@@ -1,0 +1,17 @@
+1. 支持的编解码格式:
+	alaw --> pcm
+	ulaw --> pcm
+	pcm --> alaw
+	pcm -> ulaw
+	alaw --> ulaw
+	ulaw --> alaw
+2. alaw和ulaw是pcm数据的两种压缩编码格式，解码后文件大小会增加一倍
+3. 使用wireshark抓取alaw原始数据
+	(1) 首先将UDP包decode为rtp包
+		选中UDP包-->右键选择解码为-->将当前栏设置为RTP
+	(2) 导出RTP包中的G.711音频数据
+		选中RTP包-->选择电话栏-->RTP-->流分析-->save-->
+		File Synchronized Forward Stream Audio -->文件类型选择*.raw
+		这样就得到了G.711数据
+	(3) 注意保存文件时的文件类型如果选择*.au，则文件中的音频流是已经解码好的PCM数据
+		只有保存为*.raw文件类型，得到的才是G.711数据
