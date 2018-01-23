@@ -318,20 +318,38 @@ unsigned char ulaw2alaw(unsigned char uval)
 
 /* test : convert u-law file to pcm file */
 #define BUFFER_SIZE 2048
+enum options{
+    ALAW_2_LINEAR = 0,
+	ULAW_2_LINEAR,
+	LINEAR_2_ALAW,
+	LINEAR_2_ULAW,
+	ALAW_2_ULAW,
+	ULAW_2_ALAW,
+	MAX_OPTIONS = ULAW_2_ALAW,
+};
+
+#define OPTIONS  "  \
+\t option = 0, alaw --> pcm\n \
+\t option = 1, ulaw --> pcm\n \
+\t option = 2, pcm --> alaw\n \
+\t option = 3, pcm -> ulaw\n \
+\t option = 4, alaw --> ulaw\n \
+\t option = 5, ulaw --> alaw\n"
 
 int main(int argc, char **argv)
 {
-    int fd_src, fd_des;
+    int fd_src, fd_des, options;
     ssize_t rsize;
     char buf_src[BUFFER_SIZE];
     char buf_des[BUFFER_SIZE * 2];
 
-    if(argc < 2) {
-        fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+    if(argc < 3) {
+        fprintf(stderr, "Usage: %s <option> <sourcefile>\n", argv[0]);
+        fprintf(stderr, "%s", OPTIONS);
         exit(EXIT_FAILURE);
     }
 
-    fd_src = open(argv[1], O_RDONLY);
+	fd_src = open(argv[2], O_RDONLY);
     if (fd_src == -1) {
         perror("src open");
         exit(EXIT_FAILURE);
@@ -342,6 +360,57 @@ int main(int argc, char **argv)
         perror("des open");
         exit(EXIT_FAILURE);
     }
+
+	int size;
+	bool ret = false;
+	options = atoi(argv[1]);
+	switch(options) {
+	case ALAW_2_LINEAR:
+		while((rsize = read(fd_src, buf_src, BUFFER_SIZE)) != 0) {
+        	size = G711Decode(buf_des, buf_src, rsize, G711ALAW);
+			if (size > 0)
+        		write(fd_des, buf_des, size);
+    	}
+		break;
+	case ULAW_2_LINEAR:
+		while((rsize = read(fd_src, buf_src, BUFFER_SIZE)) != 0) {
+        	size = G711Decode(buf_des, buf_src, rsize, G711ULAW);
+			if (size > 0)
+        		write(fd_des, buf_des, size);
+    	}
+		break;
+	case LINEAR_2_ALAW:
+		while((rsize = read(fd_src, buf_src, BUFFER_SIZE)) != 0) {
+			size = G711EnCode(buf_des, buf_src, rsize, G711ALAW);
+			if (size > 0)
+				write(fd_des, buf_des, size);
+		}
+		break;
+	case LINEAR_2_ULAW:
+		while((rsize = read(fd_src, buf_src, BUFFER_SIZE)) != 0) {
+			size = G711EnCode(buf_des, buf_src, rsize, G711ULAW);
+			if (size > 0)
+				write(fd_des, buf_des, size);
+		}
+		break;
+	case ALAW_2_ULAW:
+		while((rsize = read(fd_src, buf_src, BUFFER_SIZE)) != 0) {
+			ret = G711TypeChange(buf_src, buf_des, rsize, G711ULAW);
+			if (ret)
+				write(fd_des, buf_des, rsize);
+		}
+		break;
+	case ULAW_2_ALAW:
+		while((rsize = read(fd_src, buf_src, BUFFER_SIZE)) != 0) {
+			ret = G711TypeChange(buf_src, buf_des, rsize, G711ALAW);
+			if (ret)
+				write(fd_des, buf_des, rsize);
+		}
+		break;
+	default:
+	    fprintf(stderr, "invalid <options>\n");
+		exit(EXIT_FAILURE);
+	}
 
     while((rsize = read(fd_src, buf_src, BUFFER_SIZE)) != 0) {
         G711Decode(buf_des, buf_src, rsize, G711ULAW);
