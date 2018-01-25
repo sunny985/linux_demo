@@ -355,7 +355,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    fd_des = open("output.pcm", O_WRONLY | O_CREAT, 0666);
+    fd_des = open("output.raw", O_WRONLY | O_CREAT, 0666);
     if (fd_des == -1) {
         perror("des open");
         exit(EXIT_FAILURE);

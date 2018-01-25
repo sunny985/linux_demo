@@ -4,7 +4,7 @@
 	pcm --> alaw
 	pcm -> ulaw
 	alaw --> ulaw
-	ulaw --> alaw
+	ulaw --> alaw(有问题，暂时不要用)
 2. alaw和ulaw是pcm数据的两种压缩编码格式，解码后文件大小会增加一倍
 3. 使用wireshark抓取alaw原始数据
 	(1) 首先将UDP包decode为rtp包
